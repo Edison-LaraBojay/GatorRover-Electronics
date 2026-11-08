@@ -1,0 +1,10 @@
+Firmware modules. PlatformIO builds each folder here as its own library.
+
+  common/     Device base class, clock
+  transport/  CAN bus (I2C/UART use Arduino's own classes)
+  board/      peripherals + pins per board revision, connector structs
+  imu/  lidar/  power/  motor/
+              abstract class at the top of the folder,
+              implementations in subfolders (dummy/ today)
+
+See ../README.md for how implementations are constructed and swapped.
