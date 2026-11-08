@@ -1,0 +1,29 @@
+name: firmware-build
+
+# Runs on every PR (no path filter): the main ruleset requires this check,
+# so a PR that skipped it could never merge.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  firmware-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-${{ hashFiles('firmware/control-board/control-board/platformio.ini') }}
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build control board
+        run: pio run -d firmware/control-board/control-board
