@@ -41,9 +41,9 @@ IMPORTANT:
 ## Byte Explanation
 
 ### SOF 1
- The first byte of the Start-of-Frame sequence. The Jetson searches for this byte when receiving data from the Teensy, while the Teensy searches for this byte when waiting for a command from the Jetson. __We will define SOF1 as `0xAA`__. This value can be easier to find while debugging because it is just alternating bits: `0b10101010`.
+ The first byte of the Start-of-Frame sequence. The Jetson searches for this byte when receiving data from the Teensy, while the Teensy searches for this byte when waiting for a command from the Jetson. __We will define SOF1 as `0xAA`__. This value can be easier to find while debugging because it is just alternating bits: `0b10101010`. If the Teensy is scanning for this byte and it receives a byte that is not `0xAA`, that byte will be dropped.
 ### SOF 2
- The second byte of the Start-of-Frame sequence. If both SOF bytes have been recognized in order, the Jetson/Teensy should begin parsing the packet. __We will define SOF2 as `0x55`__. It is also just alternating bits: `0b01010101`. 
+ The second byte of the Start-of-Frame sequence. If both SOF bytes have been recognized in order, the Jetson/Teensy should begin parsing the packet. __We will define SOF2 as `0x55`__. It is also just alternating bits: `0b01010101`. If the Teensy last received `0xAA` and next receives a byte that is not `0x55`, it will drop the packet and scan for SOF1 (`0xAA`) again.
 ### Peripheral ID
  The ID of the peripheral that is being addressed in the current packet. Every peripheral will have its own unique ID.
 ### Command
@@ -55,7 +55,7 @@ IMPORTANT:
 ### Payload
  Contains the data associated with the command. The Jetson sends command parameters (ex: motor driver PWM). The Teensy sends data payloads (ex: the data collected from a sensor).
 ### CRC
- The UART communication between the Jetson and Teensy may be susceptible to noise from the rover peripherals. To detect  corruption, a two-byte Cyclic Redundancy Check (CRC-16) can be implemented. The receiver calculates CRC from the data bytes (peripheral ID, command, sequence ID, length, and payload) and compares it with their received CRC value. If the calculated and received CRC are not the same, the data received was corrupted and should be discarded. We will use CRC-16/XMODEM. More [information about it can be found here](https://resources.basicmicro.com/cyclic-redundancy-check-explained/). There is also an [online CRC-16/XMODEM calculator](https://crccalc.com/?crc=0x38544&method=CRC-16%2FXMODEM&datatype=hex&outtype=hex) if you want to experiment.
+ The UART communication between the Jetson and Teensy may be susceptible to noise from the rover peripherals. To detect  corruption, a two-byte Cyclic Redundancy Check (CRC-16) can be implemented. The receiver calculates CRC from the raw data (entire header + payload) and compares it with their received CRC value. If the calculated and received CRC are not the same, the data received was corrupted and should be discarded. We will use CRC-16/XMODEM. More [information about it can be found here](https://resources.basicmicro.com/cyclic-redundancy-check-explained/). There is also an [online CRC-16/XMODEM calculator](https://crccalc.com/?crc=0x38544&method=CRC-16%2FXMODEM&datatype=hex&outtype=hex) if you want to experiment.
 
  The code below outlines how to calculate and use CRC in C++:
 
@@ -120,14 +120,14 @@ Command table __(just an example for now)__:
 ## Example
 If the 5th command that the Jetson is sending to the Teensy is a read from a motor encoder (peripheral ID: 0x1A) with a 512 (`0x0200`) ms timeout, it should send the folowing packet to the Teensy:
 
-| `0xAA` | `0x55` | `0x1A` | `0x01` | `0x05` | `0x02` | `0x00` | `0x02` | `0xB0` | `0xC4` |
+| `0xAA` | `0x55` | `0x1A` | `0x01` | `0x05` | `0x02` | `0x00` | `0x02` | `0x15` | `0x40` |
 |---|---|---|---|---|---|---|---|---|---|
 | SOF1 | SOF2 | Peripheral ID | Command | Sequence ID | Length | Payload byte 1 | Payload 2 byte 1 | CRC byte 2 | CRC byte 1 |
 
-The CRC bytes are `0x6F06`, calculated from the data bytes.
+The CRC bytes are `0x4015`, calculated from the data bytes.
 
 After parsing, validating, and executing the command, the Teensy gets a value of `0xAABBCCDD` from the encoder. The packet to send to the Jetson should be:
 
-| `0xAA` | `0x55` | `0x1A` | `0x01` | `0x05` | `0x04` | `0xDD` | `0xCC` | `0xBB` | `0xAA` | `0x01` | `0xB1` |
+| `0xAA` | `0x55` | `0x1A` | `0x01` | `0x05` | `0x04` | `0xDD` | `0xCC` | `0xBB` | `0xAA` | `0xF9` | `0xF8` |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | SOF1 | SOF2 | Peripheral ID | Command | Sequence ID | Length |Payload byte 1 | Payload byte 1 | Payload byte 3 | Payload byte 4 |CRC byte 2 | CRC byte 1 |
