@@ -13,6 +13,9 @@
 #include "dummy/dummy_power_monitor.hpp"
 #include "dummy/dummy_range_finder.hpp"
 
+#include "jetson_link.hpp"
+
+using JetsonLink  = JetsonLink;
 using DriveCanBus = DummyCanBus;
 using ChassisImu  = DummyImu;
 using FrontLidar  = DummyRangeFinder;
@@ -37,9 +40,11 @@ struct Hardware {
     }
 
     // ---- Devices: each reaches its transport through its connector -------
-    ChassisImu imu   {"imu",         {board.i2c, board.imu_gyro_int_pin, board.imu_accel_int_pin}, ChassisImu::Config{}};
-    FrontLidar lidar {"front_lidar", {board.lidar_serial}, FrontLidar::Config{}};
-    MainPower  power {"main_power",  {board.i2c},          MainPower::Config{}};
+    JetsonLink jetson {"jetson_link", {board.jetson_serial}};
+
+    ChassisImu imu    {"imu",         {board.i2c, board.imu_gyro_int_pin, board.imu_accel_int_pin}, ChassisImu::Config{}};
+    FrontLidar lidar  {"front_lidar", {board.lidar_serial}, FrontLidar::Config{}};
+    MainPower  power  {"main_power",  {board.i2c},          MainPower::Config{}};
 
     DriveMotor drive_fl {"drive_fl", {drive_can, 1}, DriveMotor::Config{}};
     DriveMotor drive_fr {"drive_fr", {drive_can, 2}, DriveMotor::Config{}};
