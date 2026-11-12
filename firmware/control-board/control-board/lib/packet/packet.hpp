@@ -44,7 +44,7 @@ struct Packet {
     static constexpr size_t COMMAND_POS = 3;
     static constexpr size_t SEQUENCE_ID_POS = 4;
     static constexpr size_t LENGTH_POS = 5;
-    static constexpr size_t PAYLOAD_START_POS = 6;
+    static constexpr size_t PAYLOAD_START_POS = HEADER_SIZE;
 
 
 

@@ -53,11 +53,35 @@ public:
         uint8_t peripheral_id,
         uint8_t command,
         uint8_t sequence_id,
-        size_t payload_len,
+        uint8_t payload_len,
         const uint8_t* payload
         
     ) {
-        /// TODO: implement this thing
+        size_t packet_len = Packet::HEADER_SIZE + payload_len + Packet::CRC_SIZE;
+        uint8_t packet[Packet::MAX_PACKET_SIZE] = {};
+
+        packet[Packet::SOF1_POS] = 0xAA;
+        packet[Packet::SOF2_POS] = 0x55;
+        packet[Packet::PERIPHERAL_ID_POS] = peripheral_id;
+        packet[Packet::COMMAND_POS] = command;
+        packet[Packet::SEQUENCE_ID_POS] = sequence_id;
+        packet[Packet::LENGTH_POS] = payload_len;
+
+        if (payload_len > 0) {
+            if (payload == nullptr) {
+                return;
+            }
+
+            memcpy(packet + Packet::HEADER_SIZE, payload, payload_len);
+        }
+
+        size_t crc_index = Packet::HEADER_SIZE + payload_len;
+        uint16_t crc = crc16xmodem(packet, Packet::HEADER_SIZE + packet_len);
+
+        packet[crc_index] = (uint8_t)(crc & 0xFF);
+        packet[crc_index + 1] = (uint8_t)(crc >> 8);
+
+        uart_.serial.write(packet, packet_len);
     }
 
     /**
