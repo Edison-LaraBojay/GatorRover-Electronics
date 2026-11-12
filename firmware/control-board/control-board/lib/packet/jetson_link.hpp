@@ -6,20 +6,20 @@
 #include "packet.hpp"
 
 class JetsonLink : public Device {
-private:
-
-
 public:
 
-    explicit JetsonLink(const char* name, const JetsonConnector& uart)
+    JetsonLink(const char* name, const JetsonConnector& uart)
         : Device(name), uart_(uart) {}
+
 
     bool begin() override {
         status_ = DeviceStatus::Ok;
         return true;
     }
 
-
+    /**
+     * @brief Reads a byte from the Jetson UART and processes it into the Packet queue.
+     */
     void update(uint64_t now_us) override {
         (void)now_us;
 
@@ -29,7 +29,7 @@ public:
             return;
         }
 
-        process_byte((uint8_t)byte);
+        process_byte_((uint8_t)byte);
 
 
         /* MIGHT BE BLOCKING
@@ -46,7 +46,49 @@ public:
 
     }
 
-    void process_byte(uint8_t byte) {
+    /**
+     * @brief Calculates a packet's CRC, constructs the packet, and sends it through the JetsonConnector.
+     */
+    void send_packet(
+        uint8_t peripheral_id,
+        uint8_t command,
+        uint8_t sequence_id,
+        size_t payload_len,
+        const uint8_t* payload
+        
+    ) {
+        /// TODO: implement this thing
+    }
+
+    /**
+     * @brief Returns a const pointer to the first byte of the oldest packet in the queue.
+     */
+    const Packet* peek_packet() const {
+        if (queue_count_ == 0) {
+            return nullptr;
+        }
+
+        return &packet_buffer_[queue_tail_];
+    }
+
+    /**
+     * @brief Removes the oldest packet in the queue.
+     */
+    void pop_packet() {
+        if (queue_count_ == 0) {
+            return;
+        }
+
+        queue_tail_ = (queue_tail_ + 1) % PACKET_BUFFER_SIZE;
+        --queue_count_;
+    }
+
+private:
+
+    static constexpr size_t PACKET_BUFFER_SIZE = 3;
+
+
+    void process_byte_(uint8_t byte) {
 
         // Queue is full
         if (queue_count_ >= PACKET_BUFFER_SIZE) {
@@ -56,14 +98,14 @@ public:
         Packet& curr_packet = packet_buffer_[queue_head_];
 
         // Search for SOF1
-        if (rx_index_ == Packet::SOF1) {
+        if (rx_index_ == Packet::SOF1_POS) {
             if (byte != 0xAA) {
                 return;
             }
         }
 
         // Search for SOF2
-        else if (rx_index_ == Packet::SOF2) {
+        else if (rx_index_ == Packet::SOF2_POS) {
             if (byte != 0x55) {
                 rx_index_ = (byte == 0xAA) ? 1 : 0;
                 return;
@@ -77,7 +119,7 @@ public:
 
         curr_packet.data[rx_index_] = byte;
 
-        if (rx_index_ == Packet::LENGTH) {
+        if (rx_index_ == Packet::LENGTH_POS) {
             curr_packet.length = byte;
 
             if (curr_packet.length > Packet::MAX_PAYLOAD_SIZE) {
@@ -105,7 +147,7 @@ public:
             ((uint16_t)(curr_packet.data[crc_index + 1]) << 8);
 
         // Calculate CRC over header + payload
-        uint16_t crc_calculated = Packet::crc16xmodem(curr_packet.data, crc_index);
+        uint16_t crc_calculated = crc16xmodem(curr_packet.data, crc_index);
 
         // Reset receive position for next packet
         rx_index_ = 0;
@@ -119,14 +161,6 @@ public:
         ++queue_count_;
     }
 
-
-    void execute() {
-
-    }
-
-private:
-
-    static constexpr size_t PACKET_BUFFER_SIZE = 8;
 
     const JetsonConnector& uart_;
 

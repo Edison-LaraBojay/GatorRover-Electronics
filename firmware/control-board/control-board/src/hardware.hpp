@@ -3,6 +3,8 @@
 // Which board, which transports, and which implementation of each device.
 // The only file that names specific implementations.
 
+#include "hardware_config.hpp"
+
 #include "can_bus.hpp"
 #include "connectors.hpp"
 #include "control_board_v1.hpp"
@@ -15,7 +17,7 @@
 
 #include "jetson_link.hpp"
 
-using JetsonLink  = JetsonLink;
+
 using DriveCanBus = DummyCanBus;
 using ChassisImu  = DummyImu;
 using FrontLidar  = DummyRangeFinder;
@@ -24,10 +26,6 @@ using DriveMotor  = DummyMotorController;
 
 struct Hardware {
     const Board& board = controlBoardV1();
-
-    static constexpr uint32_t kI2cClockHz = 400000;
-    static constexpr uint32_t kJetsonBaud = 115200;
-    static constexpr uint32_t kLidarBaud  = 115200;
 
     DriveCanBus drive_can {board.can_port, DriveCanBus::Config{}};
 
@@ -39,7 +37,40 @@ struct Hardware {
         drive_can.begin();
     }
 
-    // ---- Devices: each reaches its transport through its connector -------
+    void execute() {
+        const Packet* packet = hw.jetson.peek_packet();
+        hw.jetson.pop_packet();
+
+        // extracting packet header
+        uint8_t peripheral_id = packet->data[Packet::PERIPHERAL_ID_POS];
+        uint8_t command = packet->data[Packet::COMMAND_POS];
+        uint8_t sequence_id = packet->data[Packet::SEQUENCE_ID_POS];
+        uint8_t payload_len = packet->data[Packet::LENGTH_POS];
+
+        // extracting payload pointer
+        const uint8_t* payload = &packet->data[Packet::PAYLOAD_START_POS];
+
+        /// TODO: Write an example of transmitting data the the Jetson and an example of sending a command to a peripheral
+        switch (command) {
+            case IMU_SAMPLE: {
+
+                uint8_t payload[IMU_SAMPLE_PAYLOAD_SIZE];
+
+                /// TODO: Sample the IMU and populate the payload
+
+                jetson.send_packet(peripheral_id, command, sequence_id, payload_len, payload);
+
+                break;
+            }
+
+            /// TODO: get the rest of the Teensy commands and implement them
+
+            default:
+                break;
+        }
+    }
+
+    // --- Devices: each reaches its transport through its connector --- //
     JetsonLink jetson {"jetson_link", {board.jetson_serial}};
 
     ChassisImu imu    {"imu",         {board.i2c, board.imu_gyro_int_pin, board.imu_accel_int_pin}, ChassisImu::Config{}};
@@ -52,5 +83,5 @@ struct Hardware {
     DriveMotor drive_rr {"drive_rr", {drive_can, 4}, DriveMotor::Config{}};
 
     MotorController* const drive_motors[4] = {&drive_fl, &drive_fr, &drive_rl, &drive_rr};
-    Device* const devices[7] = {&imu, &lidar, &power, &drive_fl, &drive_fr, &drive_rl, &drive_rr};
+    Device* const devices[8] = {&jetson, &imu, &lidar, &power, &drive_fl, &drive_fr, &drive_rl, &drive_rr};
 };

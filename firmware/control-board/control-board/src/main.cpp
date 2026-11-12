@@ -19,4 +19,6 @@ void loop() {
     for (Device* d : hw.devices) {
         d->update(now);
     }
+
+    hw.execute();
 }
