@@ -32,7 +32,7 @@ public:
         process_byte_((uint8_t)byte);
 
 
-        /* MIGHT BE BLOCKING
+        /* Is probably better, but it might be blocking...
         while (uart_.serial.available() > 0) {
             int byte = uart_.serial.read();
 
