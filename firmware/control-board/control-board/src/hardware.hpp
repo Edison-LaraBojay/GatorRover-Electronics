@@ -63,7 +63,7 @@ struct Hardware {
 
                 /// TODO: Sample the IMU and populate the payload
 
-                jetson.send_packet(peripheral_id, command, sequence_id, payload_len, payload);
+                jetson.send_packet(peripheral_id, command, sequence_id, IMU_SAMPLE_PAYLOAD_SIZE, payload);
 
                 break;
             }
