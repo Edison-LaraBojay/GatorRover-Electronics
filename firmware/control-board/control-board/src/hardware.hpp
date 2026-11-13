@@ -39,6 +39,11 @@ struct Hardware {
 
     void execute() {
         const Packet* packet = hw.jetson.peek_packet();
+
+        if (!packet) {
+            return;
+        }
+
         hw.jetson.pop_packet();
 
         // extracting packet header
@@ -48,7 +53,7 @@ struct Hardware {
         uint8_t payload_len = packet->data[Packet::LENGTH_POS];
 
         // extracting payload pointer
-        const uint8_t* payload = &packet->data[Packet::PAYLOAD_START_POS];
+        const uint8_t* payload_received = &packet->data[Packet::PAYLOAD_START_POS];
 
         /// TODO: Write an example of transmitting data the the Jetson and an example of sending a command to a peripheral
         switch (command) {
