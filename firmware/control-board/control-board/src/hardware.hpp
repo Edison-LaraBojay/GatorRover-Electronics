@@ -55,20 +55,17 @@ struct Hardware {
         // extracting payload pointer
         const uint8_t* payload_received = &packet->data[Packet::PAYLOAD_START_POS];
 
-        /// TODO: Write an example of transmitting data the the Jetson and an example of sending a command to a peripheral
         switch (command) {
             case IMU_SAMPLE: {
 
                 uint8_t payload[IMU_SAMPLE_PAYLOAD_SIZE];
 
-                /// TODO: Sample the IMU and populate the payload
+                
 
                 jetson.send_packet(peripheral_id, command, sequence_id, IMU_SAMPLE_PAYLOAD_SIZE, payload);
 
                 break;
             }
-
-            /// TODO: get the rest of the Teensy commands and implement them
 
             default:
                 break;
