@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "connectors.hpp"
 #include "device.hpp"
+
 #include "packet.hpp"
 #include "packet_parser.hpp"
 #include "packet_serializer.hpp"
@@ -45,8 +46,7 @@ public:
                 if (queue_count_ < PACKET_BUFFER_SIZE) {
                     packet_buffer_[queue_head_] = packet;
 
-                    queue_head_ =
-                        (queue_head_ + 1) % PACKET_BUFFER_SIZE;
+                    queue_head_ = (queue_head_ + 1) % PACKET_BUFFER_SIZE;
 
                     queue_count_++;
                 }
@@ -57,16 +57,35 @@ public:
     void send_packet(const Packet& packet) {
         uint8_t buffer[Packet::MAX_PACKET_SIZE];
 
-        size_t length = PacketSerializer::serialize(
-            packet,
-            buffer,
-            sizeof(buffer)
-        );
+        size_t length = PacketSerializer::serialize(packet, buffer, sizeof(buffer));
 
         if (length == 0) {
             return;
         }
 
         uart_.serial.write(buffer, length);
+    }
+
+    /**
+     * @brief Returns a const pointer to the oldest packet in the queue.
+     */
+    const Packet* peek_packet() const {
+        if (queue_count_ == 0) {
+            return nullptr;
+        }
+
+        return &packet_buffer_[queue_tail_];
+    }
+
+    /**
+     * @brief Removes the oldest packet in the queue.
+     */
+    void pop_packet() {
+        if (queue_count_ == 0) {
+            return;
+        }
+
+        queue_tail_ = (queue_tail_ + 1) % PACKET_BUFFER_SIZE;
+        --queue_count_;
     }
 };

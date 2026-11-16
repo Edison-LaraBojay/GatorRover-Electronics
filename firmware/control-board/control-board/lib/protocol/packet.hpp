@@ -17,12 +17,15 @@ struct Packet {
     // Packet metadata
     static constexpr uint8_t SOF1 = 0xAA;
     static constexpr uint8_t SOF2 = 0x55;
-    static constexpr size_t PACKET_BUFFER_SIZE = 256; // Based on sequence ID size (1 byte supports 256 packets)
     static constexpr size_t MAX_PAYLOAD_SIZE = 64;
     static constexpr size_t HEADER_SIZE = PAYLOAD_START_POS;
     static constexpr size_t SOF_SIZE = 2;
     static constexpr size_t CRC_SIZE = 2;
     static constexpr size_t MAX_PACKET_SIZE = HEADER_SIZE + MAX_PAYLOAD_SIZE + CRC_SIZE;
+
+
+    Packet(uint8_t p, uint8_t c, uint8_t s, uint8_t l)
+        : peripheral_id(p), command(c), sequence_id(s), length(l) {}
 
 
     uint8_t peripheral_id;

@@ -1,7 +1,6 @@
 #include "packet.hpp"
 
-#include <stdint.h>
-#include <stddef.h>
+#include <Arduino.h>
 
 
 // --- Transport Frequencies --- //
@@ -21,11 +20,3 @@ static constexpr size_t DRIVE_FL = 4;
 static constexpr size_t DRIVE_FR = 5;
 static constexpr size_t DRIVE_RL = 6;
 static constexpr size_t DRIVE_RR = 7;
-
-
-// --- Command Table --- //
-
-// IMU
-static constexpr u_int8_t IMU_SAMPLE = 0;
-static constexpr size_t   IMU_SAMPLE_PAYLOAD_SIZE = 4;
-static constexpr size_t   IMU_SAMPLE_PACKET_SIZE = Packet::HEADER_SIZE + IMU_SAMPLE_PAYLOAD_SIZE + Packet::CRC_SIZE;

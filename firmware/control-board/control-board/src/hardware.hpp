@@ -16,6 +16,7 @@
 #include "dummy/dummy_range_finder.hpp"
 
 #include "jetson_link.hpp"
+#include "command.hpp"
 
 
 using DriveCanBus = DummyCanBus;
@@ -38,38 +39,46 @@ struct Hardware {
     }
 
     void execute() {
-        const Packet* packet = hw.jetson.peek_packet();
+        const Packet* request = hw.jetson.peek_packet();
 
-        if (!packet) {
+        if (!request) {
             return;
         }
 
-        hw.jetson.pop_packet();
-
-        // extracting packet header
-        uint8_t peripheral_id = packet->data[Packet::PERIPHERAL_ID_POS];
-        uint8_t command = packet->data[Packet::COMMAND_POS];
-        uint8_t sequence_id = packet->data[Packet::SEQUENCE_ID_POS];
-        uint8_t payload_len = packet->data[Packet::LENGTH_POS];
-
-        // extracting payload pointer
-        const uint8_t* payload_received = &packet->data[Packet::PAYLOAD_START_POS];
-
-        switch (command) {
+        switch (request->command) {
             case IMU_SAMPLE: {
-
-                uint8_t payload[IMU_SAMPLE_PAYLOAD_SIZE];
-
-                
-
-                jetson.send_packet(peripheral_id, command, sequence_id, IMU_SAMPLE_PAYLOAD_SIZE, payload);
-
+                handle_imu_sample(request);
                 break;
             }
 
-            default:
+            /// TODO: add more commands
+
+            default: {
                 break;
+            }
         }
+
+        jetson.pop_packet();
+    }
+
+    void handle_imu_sample(const Packet* request) {
+        Packet response(
+            request->peripheral_id, 
+            request->command, 
+            request->sequence_id, 
+            IMU_SAMPLE_PAYLOAD_SIZE
+        );
+
+        size_t offset = 0;
+        const ImuSample& sample = imu.latest();
+        
+        memcpy(response.payload + offset, sample.accel_mps2, sizeof(sample.accel_mps2));
+        offset += sizeof(sample.accel_mps2);
+        memcpy(response.payload + offset, sample.gyro_radps, sizeof(sample.gyro_radps));
+        offset += sizeof(sample.gyro_radps);
+        memcpy(response.payload + offset, &sample.temperature_c, sizeof(sample.temperature_c));
+
+        jetson.send_packet(response);
     }
 
     // --- Devices: each reaches its transport through its connector --- //
