@@ -4,7 +4,7 @@
 #include "motor_controller.hpp"
 
 struct SparkMaxConfig {
-    float free_speed_rpm = 5676.0f; // spped at full duty cycle
+    float free_speed_rpm = 5676.0f; // speed at full duty cycle
 };
 
 
