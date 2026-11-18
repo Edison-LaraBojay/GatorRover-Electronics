@@ -4,13 +4,13 @@
 #include <Wire.h>
 #include <stdint.h>
 
-#include "i2c/dummy/dummy_i2c_bus.hpp"
+#include "i2c/two_wire/two_wire_i2c_bus.hpp"
 
 // What each device implementation receives: the bus or port behind its
 // connector plus any extra pins. Built in src/hardware.hpp.
 // CAN devices use CanDeviceConnector (can_bus.hpp).
 
-using I2cBus = DummyI2cBus;
+using I2cBus = TwoWireI2cBus;
 
 struct JetsonConnector {
     HardwareSerial& serial;
