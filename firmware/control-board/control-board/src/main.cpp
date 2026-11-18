@@ -2,9 +2,11 @@
 
 #include "clock.hpp"
 #include "hardware.hpp"
+#include "controller.hpp"
 
 namespace {
 Hardware hw;
+RoverController controller(hw);
 }
 
 void setup() {
@@ -20,5 +22,5 @@ void loop() {
         d->update(now);
     }
 
-    hw.execute();
+    controller.execute();
 }

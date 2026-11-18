@@ -23,6 +23,8 @@ struct Packet {
     static constexpr size_t CRC_SIZE = 2;
     static constexpr size_t MAX_PACKET_SIZE = HEADER_SIZE + MAX_PAYLOAD_SIZE + CRC_SIZE;
 
+    Packet()
+        : peripheral_id(0x00), command(0x00), sequence_id(0x00), length(0x00) {}
 
     Packet(uint8_t p, uint8_t c, uint8_t s, uint8_t l)
         : peripheral_id(p), command(c), sequence_id(s), length(l) {}
@@ -33,5 +35,5 @@ struct Packet {
     uint8_t sequence_id;
     uint8_t length;
 
-    uint8_t payload[MAX_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PAYLOAD_SIZE] = {};
 };

@@ -15,8 +15,8 @@
 #include "dummy/dummy_power_monitor.hpp"
 #include "dummy/dummy_range_finder.hpp"
 
-#include "jetson_link.hpp"
-#include "command.hpp"
+#include "jetsonlink.hpp"
+
 
 
 using DriveCanBus = DummyCanBus;
@@ -38,51 +38,8 @@ struct Hardware {
         drive_can.begin();
     }
 
-    void execute() {
-        const Packet* request = hw.jetson.peek_packet();
-
-        if (!request) {
-            return;
-        }
-
-        switch (request->command) {
-            case IMU_SAMPLE: {
-                handle_imu_sample(request);
-                break;
-            }
-
-            /// TODO: add more commands
-
-            default: {
-                break;
-            }
-        }
-
-        jetson.pop_packet();
-    }
-
-    void handle_imu_sample(const Packet* request) {
-        Packet response(
-            request->peripheral_id, 
-            request->command, 
-            request->sequence_id, 
-            IMU_SAMPLE_PAYLOAD_SIZE
-        );
-
-        size_t offset = 0;
-        const ImuSample& sample = imu.latest();
-        
-        memcpy(response.payload + offset, sample.accel_mps2, sizeof(sample.accel_mps2));
-        offset += sizeof(sample.accel_mps2);
-        memcpy(response.payload + offset, sample.gyro_radps, sizeof(sample.gyro_radps));
-        offset += sizeof(sample.gyro_radps);
-        memcpy(response.payload + offset, &sample.temperature_c, sizeof(sample.temperature_c));
-
-        jetson.send_packet(response);
-    }
-
     // --- Devices: each reaches its transport through its connector --- //
-    JetsonLink jetson {"jetson_link", {board.jetson_serial}};
+    JetsonLink jetsonlink {"jetsonlink", {board.jetson_serial}};
 
     ChassisImu imu    {"imu",         {board.i2c, board.imu_gyro_int_pin, board.imu_accel_int_pin}, ChassisImu::Config{}};
     FrontLidar lidar  {"front_lidar", {board.lidar_serial}, FrontLidar::Config{}};
@@ -94,5 +51,5 @@ struct Hardware {
     DriveMotor drive_rr {"drive_rr", {drive_can, 4}, DriveMotor::Config{}};
 
     MotorController* const drive_motors[4] = {&drive_fl, &drive_fr, &drive_rl, &drive_rr};
-    Device* const devices[8] = {&jetson, &imu, &lidar, &power, &drive_fl, &drive_fr, &drive_rl, &drive_rr};
+    Device* const devices[8] = {&jetsonlink, &imu, &lidar, &power, &drive_fl, &drive_fr, &drive_rl, &drive_rr};
 };
