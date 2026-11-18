@@ -12,11 +12,11 @@ static constexpr uint32_t kLidarBaud  = 115200;
 
 // --- Device/Peripheral IDs --- //
 
-static constexpr size_t JETSON   = 0;
-static constexpr size_t IMU      = 1;
-static constexpr size_t LIDAR    = 2;
-static constexpr size_t POWER    = 3;
-static constexpr size_t DRIVE_FL = 4;
-static constexpr size_t DRIVE_FR = 5;
-static constexpr size_t DRIVE_RL = 6;
-static constexpr size_t DRIVE_RR = 7;
+static constexpr size_t JETSONLINK_ID   = 0;
+static constexpr size_t IMU_ID      = JETSONLINK_ID + 1;
+static constexpr size_t LIDAR_ID    = IMU_ID + 1;
+static constexpr size_t POWER_ID    = LIDAR_ID + 1;
+static constexpr size_t DRIVE_FL_ID = POWER_ID + 1;
+static constexpr size_t DRIVE_FR_ID = DRIVE_FL_ID + 1;
+static constexpr size_t DRIVE_RL_ID = DRIVE_FR_ID + 1;
+static constexpr size_t DRIVE_RR_ID = DRIVE_RL_ID + 1;

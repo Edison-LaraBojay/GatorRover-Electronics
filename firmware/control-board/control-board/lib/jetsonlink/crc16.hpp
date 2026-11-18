@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Arduino.h>
+#include <stdint.h>
+#include <stddef.h>
 
  
 inline static uint16_t crc16xmodem(const uint8_t* data, size_t length) {
