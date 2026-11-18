@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "i2c_bus.hpp"
 #include "can_bus.hpp"
 
 // What a control board physically has: which Teensy peripheral and pins

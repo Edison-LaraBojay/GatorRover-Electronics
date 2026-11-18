@@ -5,11 +5,11 @@
 
 #include "hardware_config.hpp"
 
-#include "can_bus.hpp"
+#include "can/can_bus.hpp"
 #include "connectors.hpp"
 #include "control_board_v1.hpp"
 
-#include "dummy/dummy_can_bus.hpp"
+#include "can/dummy/dummy_can_bus.hpp"
 #include "dummy/dummy_imu.hpp"
 #include "dummy/dummy_motor_controller.hpp"
 #include "dummy/dummy_power_monitor.hpp"
