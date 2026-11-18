@@ -27,5 +27,5 @@ struct LidarConnector {
 
 // 4-pin JST: 3V3, GND, SDA, SCL.
 struct PowerLoggerConnector {
-    TwoWire& i2c;
+    I2cBus& i2c_bus;
 };
