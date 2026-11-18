@@ -28,7 +28,8 @@ public:
         uint8_t raw_gyro[6] = {0};
         uint8_t raw_accel[6] = {0};
 
-        // Burst-read 6 bytes starting from the lowest register of each block
+        // Burst-read 6 bytes starting from the lowest register of each block.
+        // Assumes that the device read pointers automatically increment with each read. Many real devices have this feature.
         BusStatus gyro_ok = connector_.i2c_bus.read_reg(GYRO_I2C_ADDR, GYRO_OUT_X_L, raw_gyro, sizeof(raw_gyro));
         BusStatus accel_ok = connector_.i2c_bus.read_reg(ACCEL_I2C_ADDR, ACCEL_OUT_X_L, raw_accel, sizeof(raw_accel));
 
