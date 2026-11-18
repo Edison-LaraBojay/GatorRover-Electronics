@@ -5,6 +5,7 @@
 #include "../i2c_bus.hpp"
 
 class TwoWireI2cBus : public I2cBus {
+public:
 
     virtual BusStatus write(uint8_t dev_addr, const uint8_t* data, uint8_t len) override {
         if (!i2c.availableForWrite()) {
