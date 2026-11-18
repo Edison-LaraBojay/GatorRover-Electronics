@@ -3,6 +3,8 @@
 // Which board, which transports, and which implementation of each device.
 // The only file that names specific implementations.
 
+#include "hardware_config.hpp"
+
 #include "can_bus.hpp"
 #include "connectors.hpp"
 #include "control_board_v1.hpp"
@@ -13,6 +15,10 @@
 #include "dummy/dummy_power_monitor.hpp"
 #include "dummy/dummy_range_finder.hpp"
 
+#include "jetsonlink.hpp"
+
+
+
 using DriveCanBus = DummyCanBus;
 using ChassisImu  = DummyImu;
 using FrontLidar  = DummyRangeFinder;
@@ -21,10 +27,6 @@ using DriveMotor  = DummyMotorController;
 
 struct Hardware {
     const Board& board = controlBoardV1();
-
-    static constexpr uint32_t kI2cClockHz = 400000;
-    static constexpr uint32_t kJetsonBaud = 115200;
-    static constexpr uint32_t kLidarBaud  = 115200;
 
     DriveCanBus drive_can {board.can_port, DriveCanBus::Config{}};
 
@@ -36,10 +38,12 @@ struct Hardware {
         drive_can.begin();
     }
 
-    // ---- Devices: each reaches its transport through its connector -------
-    ChassisImu imu   {"imu",         {board.i2c, board.imu_gyro_int_pin, board.imu_accel_int_pin}, ChassisImu::Config{}};
-    FrontLidar lidar {"front_lidar", {board.lidar_serial}, FrontLidar::Config{}};
-    MainPower  power {"main_power",  {board.i2c},          MainPower::Config{}};
+    // --- Devices: each reaches its transport through its connector --- //
+    JetsonLink jetsonlink {"jetsonlink", {board.jetson_serial}};
+
+    ChassisImu imu    {"imu",         {board.i2c, board.imu_gyro_int_pin, board.imu_accel_int_pin}, ChassisImu::Config{}};
+    FrontLidar lidar  {"front_lidar", {board.lidar_serial}, FrontLidar::Config{}};
+    MainPower  power  {"main_power",  {board.i2c},          MainPower::Config{}};
 
     DriveMotor drive_fl {"drive_fl", {drive_can, 1}, DriveMotor::Config{}};
     DriveMotor drive_fr {"drive_fr", {drive_can, 2}, DriveMotor::Config{}};
@@ -47,5 +51,5 @@ struct Hardware {
     DriveMotor drive_rr {"drive_rr", {drive_can, 4}, DriveMotor::Config{}};
 
     MotorController* const drive_motors[4] = {&drive_fl, &drive_fr, &drive_rl, &drive_rr};
-    Device* const devices[7] = {&imu, &lidar, &power, &drive_fl, &drive_fr, &drive_rl, &drive_rr};
+    Device* const devices[8] = {&jetsonlink, &imu, &lidar, &power, &drive_fl, &drive_fr, &drive_rl, &drive_rr};
 };
