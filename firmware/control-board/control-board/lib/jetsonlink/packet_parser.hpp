@@ -99,7 +99,7 @@ private:
             return false;
         }
 
-        packet.peripheral_id = buffer_[Packet::PERIPHERAL_ID_POS];
+        packet.device_id = buffer_[Packet::DEVICE_ID_POS];
         packet.command = buffer_[Packet::COMMAND_POS];
         packet.sequence_id = buffer_[Packet::SEQUENCE_ID_POS];
         packet.length = buffer_[Packet::LENGTH_POS];

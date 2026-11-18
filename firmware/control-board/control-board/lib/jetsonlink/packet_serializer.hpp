@@ -19,7 +19,7 @@ struct PacketSerializer {
 
         buffer[Packet::SOF1_POS] = Packet::SOF1;
         buffer[Packet::SOF2_POS] = Packet::SOF2;
-        buffer[Packet::PERIPHERAL_ID_POS] = packet.peripheral_id;
+        buffer[Packet::DEVICE_ID_POS] = packet.device_id;
         buffer[Packet::COMMAND_POS] = packet.command;
         buffer[Packet::SEQUENCE_ID_POS] = packet.sequence_id;
         buffer[Packet::LENGTH_POS] = packet.length;
